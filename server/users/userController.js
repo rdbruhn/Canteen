@@ -3,17 +3,27 @@ var bcrypt = require('bcrypt');
 
 module.exports = {
   signIn: function (req, next) {
-    User.find({username: req.body.username})
+    User.findOne({username: req.body.username})
       .exec(function (err, user) {
-        bcrypt.compare(req.body.password, user.password, function(err, res) {
-          next(err, res);
-        });
+        if(user){
+          // bcrypt.compare(req.body.password, user.password, function(err, res) {
+          if(user.password === req.body.password){
+            next(err, user);
+          }
+          // });
+        }else{
+          next("Not Found");
+        }
       });
   },
 
   signUp: function (req, next) {
-    User.create(req.body, function (err, user) {
-      next(err, user);
+    User.create(req.body, function (err) {
+      if(err){
+        next(null, "Duplicate");
+      }else{
+        next(null, "Added");
+      }
     });
   }
 };

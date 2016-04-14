@@ -1,5 +1,7 @@
 var tripsController = require('./trips/tripsController');
 var userController = require('./users/userController');
+var Purest = require('purest');
+var google = new Purest({provider:'google'});
 
 /* Utilities */
 var sendResponse = function (res, err, data, status) {
@@ -13,7 +15,7 @@ var sendResponse = function (res, err, data, status) {
 var createSession = function (req, res, newUser) {
   return req.session.regenerate(function () {
     req.session.user = newUser;
-    res.redirect('/');
+    sendResponse(res, null, req.session, 200);
   });
 };
 
@@ -91,19 +93,23 @@ module.exports = function (app) {
   app.route('/api/auth')
     .post(function (req, res) {
       userController.signIn(req, function (err, data) {
+        console.log(err);
         if(err){
           sendResponse(res, err, null, null);
         }else{
-          createSession(req, res, data);
+          createSession(req, res, data.username);
         }
       });
     })
     .put(function (req, res) {
       userController.signUp(req, function (err, data) {
+        console.log(err);
         if(err){
           sendResponse(res, err, null, null);
+        }else if(data === "Duplicate") {
+          sendResponse(res, err, data, 200);
         }else{
-          createSession(req, res, data);
+          createSession(req, res, req.body.username);
         }
       });
     });
@@ -111,9 +117,6 @@ module.exports = function (app) {
   /* OAuth Route */
   app.route('/callback')
     .get(function(req, res){
-      if(req.query){
-        //TODO: Create methods to store user data from req.query
-        createSession(req, res, req.query);
-      }
+      console.log(req.query);
     });
 };

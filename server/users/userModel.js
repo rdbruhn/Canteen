@@ -9,11 +9,12 @@ var userSchema = mongoose.Schema({
   password: String,
 });
 
-userSchema.pre('save', function (next) {
-  return bcrypt.hash(this.password, 5, function(err, hash) {
-    this.password = hash;
-    next();
-  });
-});
+// userSchema.pre('save', function (next) {
+//   return bcrypt.hash(this.password, 5, function(err, hash) {
+//     console.log(hash);
+//     this.password = hash;
+//     next();
+//   });
+// });
 
 module.exports = mongoose.model('User', userSchema);
